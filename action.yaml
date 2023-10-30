@@ -1,0 +1,26 @@
+---
+name: gitea-action-release
+description: >-
+  create a release on gitea
+branding:
+  icon: package
+  color: green
+inputs:
+  serverUrl:
+    description: the Url of the gitea API
+  repository:
+    description: 'The repository name in full'
+  note:
+    description: note
+  tag:
+    description: tag
+  title:
+    description: title
+  target:
+    description: target
+  token:
+    description: 'The gitea token or personal access token'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
