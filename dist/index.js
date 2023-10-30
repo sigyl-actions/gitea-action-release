@@ -15417,14 +15417,14 @@ const github = __nccwpck_require__(5438);
 
 const { giteaApi } = __nccwpck_require__(6814);
 const fetch = __nccwpck_require__(9805);
-const excludes = core.getInput('excludes')?.trim()?.split(",");
 
 async function run() {
   try {    
+
     const api = new giteaApi(
       core.getInput('serverUrl')
         || (github.context.runId && github.context.serverUrl)
-        || 'https://gitea.com/',
+        || 'https://gitea.com',
       {
         token: core.getInput('token'),
         customFetch: fetch,
@@ -15434,31 +15434,17 @@ async function run() {
     const [owner, repo] = (
       core.getInput('repository')
         || github.context.repository
-        || 'gitea/tea'
     ).split("/");
-
-    const releases = (
-      await api.repos.repoListReleases(owner, repo)
+    await api.repos.repoCreateRelease(
+      owner,
+      repo,
+      {
+        tag_name: core.getInput('tag'),
+        name: core.getInput('title'),
+        target_commitish: core.getInput('target') || github.sha,
+        body: core.getInput('note'),
+      }
     )
-      .data
-      .filter(
-        (release) => (excludes || [])
-          .reduce(
-            (acc, exclude) => acc
-              && !release[exclude],
-            true,
-          ),
-      );
-    if (releases.length) {
-      core.setOutput('release', releases[0].tag_name);
-      core.setOutput('id', String(releases[0].id));
-      core.setOutput('description', String(releases[0].body));
-      // core.setOutput('releases', releases);
-    } else {
-      core.setOutput('release', null);
-      core.setOutput('id', null);
-      core.setOutput('description', null);
-    }
   }
   catch (error) {
     core.setFailed(error.message);
